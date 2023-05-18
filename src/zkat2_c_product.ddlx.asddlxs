@@ -1,0 +1,247 @@
+@Metadata.layer: #CORE
+
+@UI: {
+    headerInfo: {
+        typeName: 'Kitchen Appliance',
+        typeNamePlural: 'Kitchen Appliances',
+        title: { type: #STANDARD
+//, label: 'Product'
+, value: 'PGName'
+        },
+        description: { value: 'Prodid' },
+        imageUrl: 'ImageUrl'
+     } ,
+    presentationVariant: [{
+        sortOrder: [{by: 'Prodid', direction: #ASC },
+                    {by: 'Pgid', direction: #ASC }],
+        visualizations: [{ type: #AS_LINEITEM
+        }] }] }
+
+//                  title: { type: #STANDARD, label: 'Product' } },
+//    presentationVariant: [{ sortOrder: [{ by: 'Prodid', direction: #DESC },
+//    { by: 'Pgid', direction: #ASC }] }] }
+
+annotate view zkat2_c_product with
+{
+  @UI.facet: [
+  //   { id: 'Product',
+  //      purpose: #STANDARD,
+  //      type: #IDENTIFICATION_REFERENCE,
+  //      label: 'Product',
+  //      position: 10 },
+
+     { id: 'ProdHeaderPrice',
+     purpose: #HEADER,
+     type: #DATAPOINT_REFERENCE,
+     position: 10,
+     targetQualifier: 'PriceData' },
+
+     { id: 'ProdHeaderID',
+     purpose: #HEADER,
+     type: #DATAPOINT_REFERENCE,
+     position: 20,
+     targetQualifier: 'IDData' },
+
+     { id: 'ProdHeaderTax',
+     purpose: #HEADER,
+     type: #DATAPOINT_REFERENCE,
+     position: 30,
+     targetQualifier: 'TaxData' },
+
+     {label: 'General Information',
+      id: 'GeneralInfo',
+      type: #COLLECTION,
+      position: 10
+     },
+
+
+        { label: 'Basic Data',
+        id: 'ProdBD',
+        purpose: #STANDARD,
+        type: #FIELDGROUP_REFERENCE,
+        parentId: 'GeneralInfo',
+        position: 10,
+        targetQualifier: 'DataGroup'
+        },
+
+        { label: 'Size Dimensions',
+        id: 'ProdSD',
+        purpose: #STANDARD,
+        type: #FIELDGROUP_REFERENCE,
+        parentId: 'GeneralInfo',
+        position: 20,
+        targetQualifier: 'SizeGroup'
+        },
+
+        { label: 'Price Details',
+        id: 'ProdPD',
+        purpose: #STANDARD,
+        type: #FIELDGROUP_REFERENCE,
+        parentId: 'GeneralInfo',
+        position: 30,
+        targetQualifier: 'PriceGroup'
+        },
+
+    {label: 'Admin Data',
+      id: 'AdminData',
+      type: #COLLECTION,
+      position: 20
+     },
+
+
+        { label: 'Create Info',
+        id: 'CreateData',
+        purpose: #STANDARD,
+        type: #FIELDGROUP_REFERENCE,
+        parentId: 'AdminData',
+        position: 10,
+        targetQualifier: 'CreateGroup'
+        },
+
+        { label: 'Change Info',
+        id: 'ChangeData',
+        purpose: #STANDARD,
+        type: #FIELDGROUP_REFERENCE,
+        parentId: 'AdminData',
+        position: 20,
+        targetQualifier: 'ChangeGroup'
+        },
+        
+     {label: 'Markets',
+      id: 'ProductMarket',
+      purpose: #STANDARD,
+      type: #LINEITEM_REFERENCE,
+      
+      position: 30,
+      targetElement: '_ProductMarket'
+    }
+,
+{ id: 'MarketQuantity',
+          label: 'Total Quantity',
+          position: 40,
+          purpose: #STANDARD,
+          targetElement: '_ProductMarket',
+          targetQualifier: 'MarketQuantity',
+          type: #CHART_REFERENCE },
+
+        { id: 'MarketAmount',
+          label: 'Total Amount',
+          position: 50,
+          purpose: #STANDARD,
+          targetElement: '_ProductMarket',
+          targetQualifier: 'MarketAmount',
+          type: #CHART_REFERENCE }
+     ]
+
+  
+  @UI.lineItem: [ { type: #FOR_ACTION, dataAction: 'MakeCopy',              label: 'Copy',               position: 10 },
+                  { type: #FOR_ACTION, dataAction: 'MoveToNextPhase',       label: 'Move to Next Phase', position: 20 } ]
+  @UI.identification: [ { type: #FOR_ACTION, dataAction: 'MakeCopy',        label: 'Copy',               position: 10 },
+                        { type: #FOR_ACTION, dataAction: 'MoveToNextPhase', label: 'Move to Next Phase', position: 20 } ]
+
+  @UI.hidden: true
+  ProdUuid;
+
+  @UI: {
+  lineItem: [{position: 10, importance: #HIGH }],
+  identification: [{position: 10, label: 'Product ID' }],
+  selectionField: [{position: 10}]}
+  @UI.dataPoint: { qualifier: 'IDData', title: 'Product ID:' }
+  @UI.fieldGroup: [ { qualifier: 'DataGroup', position: 10} ]
+  Prodid;
+
+  @UI: {
+  lineItem: [{position: 20, importance: #HIGH }],
+  identification: [{position: 20 }],
+  selectionField: [{position: 30 }],
+  textArrangement: #TEXT_ONLY }
+  @UI.fieldGroup: [ { qualifier: 'DataGroup', position: 20} ]
+  Pgid;
+
+
+  @UI: {
+  lineItem: [{position: 30, importance: #HIGH , criticality: 'PhaseCriticality'}],
+  identification: [{position: 30 }],
+  selectionField: [{position: 20 }],
+  textArrangement: #TEXT_ONLY }
+  @UI.fieldGroup: [ { qualifier: 'DataGroup', position: 30, criticality: 'PhaseCriticality'} ]
+  Phaseid;
+
+  @UI: {
+        lineItem: [{position: 40, importance: #MEDIUM }],
+        identification: [{position: 40, label: 'Price' }]
+        ,
+        selectionField: [{position: 40 }]
+        }
+  @UI.dataPoint: { qualifier: 'PriceData', title: 'Net Price:' }
+  @UI.fieldGroup: [ { qualifier: 'PriceGroup', position: 10} ]
+  Price;
+  @UI: {
+  //            lineItem: [{position: 40, importance: #MEDIUM }],
+  //            identification: [{position: 40, label: 'Price' }]
+  //            ,
+        selectionField: [{position: 50 }]
+        }
+
+  PriceCurrency;
+
+  @UI: {
+        lineItem: [{position: 50, importance: #HIGH }],
+        identification: [{position: 50 }]
+        ,
+        selectionField: [{position: 60 }]
+        }
+  @UI.dataPoint: { qualifier: 'TaxData', title: 'Tax Rate:' }
+  @UI.fieldGroup: [ { qualifier: 'PriceGroup', position: 20} ]
+  Taxrate;
+
+//  @UI: {
+//        lineItem: [{position: 60, importance: #HIGH }],
+//        identification: [{position: 60 }]
+//        //,
+//        //selectionField: [{position: 70 }]
+//        }
+  @UI.fieldGroup: [ { qualifier: 'SizeGroup', position: 10} ]
+  Height;
+//  @UI: {
+//        lineItem: [{position: 70, importance: #HIGH }],
+//        identification: [{position: 70 }]
+//        //,
+//        //selectionField: [{position: 80 }]
+//        }
+  @UI.fieldGroup: [ { qualifier: 'SizeGroup', position: 20} ]
+  Depth;
+//  @UI: {
+//        lineItem: [{position: 80, importance: #HIGH }],
+//        identification: [{position: 80 }]
+//        //,
+//        //selectionField: [{position: 90 }]
+//        }
+  @UI.fieldGroup: [ { qualifier: 'SizeGroup', position: 30} ]
+  Width;
+  
+  @UI: { lineItem:       [{ position: 70 }] }
+  Measure;
+  //      @UI: {
+  ////            lineItem: [{position: 90, importance: #HIGH }],
+  ////            identification: [{position: 90 }]
+  ////            //,
+  //            selectionField: [{position: 90 }]
+  //            }
+  //      SizeUom;
+
+
+
+  @UI.fieldGroup: [ { qualifier: 'CreateGroup', position: 10} ]
+  CreatedBy;
+  //  @UI.hidden: true
+  @UI.fieldGroup: [ { qualifier: 'CreateGroup', position: 20} ]
+  CreationTime;
+
+  @UI.fieldGroup: [ { qualifier: 'ChangeGroup', position: 10} ]
+  ChangedBy;
+
+  @UI.fieldGroup: [ { qualifier: 'ChangeGroup', position: 20} ]
+  ChangeTime;
+
+}

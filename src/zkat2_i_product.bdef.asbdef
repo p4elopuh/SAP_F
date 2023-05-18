@@ -1,0 +1,189 @@
+managed;
+strict ( 1 );
+with draft;
+
+define behavior for zkat2_I_product alias Product
+implementation in class zbp_kat2_i_product unique
+
+persistent table zkat2_d_product
+draft table zkat2_d_prod_d
+lock master total etag ChangeTime
+authorization master ( instance )
+etag master ChangeTime
+{
+  create;
+  update;
+  delete;
+  association _ProductMarket { create; with draft; }
+
+  field ( numbering : managed, readonly ) ProdUuid;
+  // administrative fields (read only)
+  field ( readonly ) ChangeTime, ChangedBy, CreationTime, CreatedBy;
+  // mandatory fields that are required to create a product
+  field ( mandatory ) Prodid, Price, PriceCurrency, Pgid;
+  field ( mandatory ) SizeUom;
+  //  field ( readonly ) Phaseid;
+
+  determination SetFirstPhase on save { create; }
+  determination CalculateProdID on save { create; }
+
+  validation ValidateProdID on save { field Prodid; create; }
+  validation ValidatePG on save { field Pgid; create; }
+
+
+  action ( features : instance ) MoveToNextPhase result [1] $self;
+  action ( features : instance ) MakeCopy parameter zkat2_abstract_param_prodid result [1] $self;
+  //action ( features : instance ) checkStatus result [1] $self;
+  //internal action recheckStatus;
+
+
+  draft determine action Prepare
+  {
+    validation ValidateProdID;
+    validation ValidatePG;
+    validation ProductMarket~ValidateMarket;
+    validation ProductMarket~ValidateStartDate;
+    validation ProductMarket~ValidateEndDate;
+    validation ProductMarket~CheckDuplicates;
+    validation MarketOrder~ValidateDeliveryDate;
+  }
+
+  draft action Edit;
+  draft action Activate;
+  draft action Discard;
+  draft action Resume;
+
+  mapping for zkat2_d_product
+    {
+      ProdUuid      = prod_uuid;
+      Prodid        = prodid;
+      Pgid          = pgid;
+      Phaseid       = phaseid;
+      Height        = height;
+      Depth         = depth;
+      Width         = width;
+      SizeUom       = size_uom;
+      Price         = price;
+      PriceCurrency = price_currency;
+      Taxrate       = taxrate;
+      CreatedBy     = created_by;
+      CreationTime  = creation_time;
+      ChangedBy     = changed_by;
+      ChangeTime    = change_time;
+    }
+
+
+
+}
+
+define behavior for ZKAT2_I_PR_MRKT alias ProductMarket
+implementation in class zbp_kat2_i_pr_mrkt unique
+
+persistent table zkat2_d_pr_mrkt
+draft table zkat2_d_mrkt_d
+lock dependent by _Product
+authorization dependent by _Product
+etag master ChangeTime
+
+
+{
+  update;
+  delete;
+  association _Product { with draft; }
+  //association _MarketOrder { create ; with draft; }
+  association _MarketOrder { create ( features : instance ); with draft; }
+
+
+  field ( numbering : managed, readonly ) MrktUuid;
+  // administrative fields (read only)
+  field ( readonly ) ProdUuid;
+  field ( readonly ) ChangeTime, ChangedBy, CreationTime, CreatedBy;
+  // mandatory fields that are required to create a product
+  field ( mandatory ) Mrktid, Startdate;
+  field ( readonly ) Status;
+  field ( readonly ) Isocode;
+
+
+  validation ValidateMarket on save { field Mrktid; create; }
+  validation ValidateStartDate on save { field Startdate; create; }
+  validation ValidateEndDate on save { field Enddate; create; }
+  validation CheckDuplicates on save { field Mrktid; create; }
+
+
+  action ( features : instance ) Confirm result [1] $self;
+  //  action ( features : instance ) MakeCopy parameter zkat2_abstract_param_prodid result [1] $self;
+  //action ( features : instance ) checkStatus result [1] $self;
+  //internal action recheckStatus;
+  mapping for zkat2_d_pr_mrkt
+    {
+      ProdUuid     = prod_uuid;
+      MrktUuid     = mrkt_uuid;
+      Mrktid       = mrktid;
+      Status       = status;
+      Startdate    = startdate;
+      Enddate      = enddate;
+      CreatedBy    = created_by;
+      CreationTime = creation_time;
+      ChangedBy    = changed_by;
+      ChangeTime   = change_time;
+    }
+
+
+
+
+
+}
+
+define behavior for ZKAT2_I_MRKT_ORD alias MarketOrder
+implementation in class zbp_kat2_i_mrkt_ord unique
+
+persistent table zkat2_d_mrkt_ord
+draft table zkat2_d_ord_d
+lock dependent by _Product
+authorization dependent by _Product
+etag master ChangeTime
+
+
+{
+  update;
+  delete;
+  association _Product { with draft; }
+  association _ProductMarket { with draft; }
+
+  field ( numbering : managed, readonly ) OrderUuid;
+  field ( mandatory ) Quantity, DeliveryDate;
+  field ( readonly ) CreatedBy, CreationTime, ChangedBy, ChangeTime;
+  field ( readonly ) ProdUuid, MrktUuid;
+
+  internal action recalcAmount;
+
+  determination SetCalendarYear on modify { field DeliveryDate; create; }
+  //determination setCalendarYear on save { create; }
+  determination calculateOrderID on save { create; }
+  //determination calculateAmount on save { create; }
+  determination calculateAmount on modify { field Quantity; create; }
+
+  validation validateDeliveryDate on save { field DeliveryDate; create; }
+
+    mapping for zkat2_d_mrkt_ord
+    {
+      OrderUuid    = order_uuid;
+      MrktUuid     = mrkt_uuid;
+      ProdUuid     = prod_uuid;
+      Orderid      = orderid;
+      Quantity     = quantity;
+      CalendarYear = calendar_year;
+      DeliveryDate = delivery_date;
+      Netamount    = netamount;
+      Grossamount  = grossamount;
+      Amountcurr   = amountcurr;
+      CreatedBy    = created_by;
+      CreationTime = creation_time;
+      ChangedBy    = changed_by;
+      ChangeTime   = change_time;
+    }
+
+
+
+
+}

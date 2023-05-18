@@ -1,0 +1,185 @@
+@Metadata.layer: #CORE
+
+@UI: {
+    headerInfo: {
+        typeName: 'Order',
+        typeNamePlural: 'Orders',
+        title: { type: #STANDARD
+        },
+        description: { value: 'Orderid' },
+        imageUrl: 'CustImageURL'
+
+     } ,
+    presentationVariant: [{
+        sortOrder: [
+//        { by: 'Orderid', direction: #ASC },
+              
+                                        { by: 'DeliveryDate'
+//                                        , direction: #ASC 
+                                        }]
+//                                        ,
+//        visualizations: [{ type: #AS_LINEITEM
+//        }]
+         }] }
+@UI.chart: [{
+title: 'Order Quantity',
+description: 'Bar chart for Product Quantity by Delivery Date per Market',
+chartType: #BAR,
+dimensions: ['DeliveryDate'],
+dimensionAttributes: [{dimension: 'DeliveryDate', role: #CATEGORY }],
+measures: ['Quantity'],
+measureAttributes: [{measure: 'Quantity', role: #AXIS_1 }],
+qualifier: 'OrderQuantity'
+ },
+ { title: 'Order Amount',
+description: 'Bar chart for Amount by Delivery Date per Market',
+chartType: #BAR,
+dimensions: ['DeliveryDate'],
+dimensionAttributes: [{dimension: 'DeliveryDate', role: #CATEGORY }],
+measures: ['Netamount', 'Grossamount'],
+measureAttributes: [{measure: 'Netamount', role: #AXIS_1 },
+{ measure: 'Grossamount', role: #AXIS_2 }],
+qualifier: 'OrderAmount' }
+ ]
+
+annotate view ZKAT2_C_MRKT_ORD
+    with 
+{
+    @UI.facet: [
+  
+
+     { id: 'OrdHeaderGross',
+     purpose: #HEADER,
+     type: #DATAPOINT_REFERENCE,
+     position: 10,
+     targetQualifier: 'OrdGross' },
+
+     { id: 'OrdHeaderNet',
+     purpose: #HEADER,
+     type: #DATAPOINT_REFERENCE,
+     position: 30,
+     targetQualifier: 'OrdNet' },
+
+     { id: 'OrdHeaderID',
+     purpose: #HEADER,
+     type: #DATAPOINT_REFERENCE,
+     position: 50,
+     targetQualifier: 'OrdID' },
+
+     {label: 'General Information',
+      id: 'GeneralInfo',
+            purpose: #STANDARD,
+      type: #COLLECTION,
+      position: 10
+     },
+
+        { label: 'Basic Data',
+        id: 'OrderBD',
+        purpose: #STANDARD,
+        type: #FIELDGROUP_REFERENCE,
+        parentId: 'GeneralInfo',
+        position: 10,
+        targetQualifier: 'DataGroup'
+        },
+
+    {label: 'Admin Data',
+      id: 'AdminData',
+           purpose: #STANDARD,
+      type: #COLLECTION,
+      position: 20
+     },
+
+
+        { label: 'Create Info',
+        id: 'CreateData',
+        purpose: #STANDARD,
+        type: #FIELDGROUP_REFERENCE,
+        parentId: 'AdminData',
+        position: 10,
+        targetQualifier: 'CreateGroup'
+        },
+
+        { label: 'Change Info',
+        id: 'ChangeData',
+        purpose: #STANDARD,
+        type: #FIELDGROUP_REFERENCE,
+        parentId: 'AdminData',
+        position: 20,
+        targetQualifier: 'ChangeGroup'
+        }
+//        ,
+//        
+//     {label: 'Orders',
+//      id: 'MarketOrder',
+//      purpose: #STANDARD,
+//      type: #LINEITEM_REFERENCE,
+//      
+//      position: 30,
+//      targetElement: '_MarketOrder'
+//    }
+,
+ { id: 'MarketOrder',
+              purpose: #STANDARD,
+              type: #IDENTIFICATION_REFERENCE,
+              position: 10
+             }
+     ]
+    
+    
+    @UI.hidden: true
+    ProdUuid;
+    
+    @UI.hidden: true
+    MrktUuid;
+    
+    @UI.hidden: true
+    OrderUuid;
+    
+    
+    @UI.lineItem: [ { position: 10, importance: #HIGH } ]
+    //@UI.identification: [{position: 10, label: 'Order' }]
+    @UI.dataPoint: { qualifier: 'OrdID', title: 'Order ID:' } --header
+  @UI.fieldGroup: [ { qualifier: 'DataGroup', position: 10} ]
+//  @UI.textArrangement: #TEXT_ONLY
+    Orderid;
+    
+    @UI.lineItem: [ { position: 20, importance: #HIGH  } ]
+    @UI.fieldGroup: [ { qualifier: 'DataGroup', position: 20} ]
+    CalendarYear;
+    
+    @UI.lineItem: [ { position: 30, importance: #HIGH } ]
+    @UI.fieldGroup: [ { qualifier: 'DataGroup', position: 30} ]
+    DeliveryDate;
+    
+    @UI.lineItem: [ { position: 40, importance: #HIGH} ]
+    @UI.fieldGroup: [ { qualifier: 'DataGroup', position: 40} ]
+    Quantity;
+    
+    
+    
+        @UI.lineItem: [ { position: 50 } ]
+        @UI.dataPoint: { qualifier: 'OrdNet', title: 'Net Amount:' }
+    Netamount;
+    
+    @UI.lineItem: [ { position: 60 } ]
+    @UI.dataPoint: { qualifier: 'OrdGross', title: 'Gross Amount:' }
+    Grossamount;
+    
+    //@UI.hidden: true
+    //Amountcurr;
+    
+    
+    @UI.fieldGroup: [ { qualifier: 'CreateGroup', position: 10} ]
+  CreatedBy;
+  
+  @UI.fieldGroup: [ { qualifier: 'CreateGroup', position: 20} ]
+  CreationTime;
+
+  @UI.fieldGroup: [ { qualifier: 'ChangeGroup', position: 10} ]
+  ChangedBy;
+
+  @UI.fieldGroup: [ { qualifier: 'ChangeGroup', position: 20} ]
+  ChangeTime;
+    
+    
+}

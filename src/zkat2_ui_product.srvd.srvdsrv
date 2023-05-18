@@ -1,0 +1,11 @@
+@EndUserText.label: 'Service Definition for Product'
+define service zkat2_ui_product {
+  expose zkat2_c_product as Product;
+  expose ZKAT2_C_PR_MRKT as ProductMarket;
+  expose ZKAT2_C_MRKT_ORD as MarketOrder;
+  expose zkat2_I_pg as ProductGroup;
+  expose zkat2_i_phase as Phase;
+  expose ZKAT2_I_UOM as UOM;
+  expose ZKAT2_I_CURRENCY as Currency;
+  expose ZKAT2_I_MARKET as Market;
+}
