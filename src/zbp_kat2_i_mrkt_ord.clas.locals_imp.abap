@@ -17,6 +17,9 @@ CLASS lhc_marketorder DEFINITION INHERITING FROM cl_abap_behavior_handler.
     METHODS recalcAmount FOR MODIFY
       IMPORTING keys FOR ACTION MarketOrder~recalcAmount.
 
+    METHODS validateBussPartner FOR VALIDATE ON SAVE
+      IMPORTING keys FOR MarketOrder~validateBussPartner.
+
 ENDCLASS.
 
 CLASS lhc_marketorder IMPLEMENTATION.
@@ -137,7 +140,7 @@ CLASS lhc_marketorder IMPLEMENTATION.
                            %element-DeliveryDate = if_abap_behv=>mk-on )
             TO reported-marketorder.
 
-        ELSEIF marketdate-Enddate is not initial and orderdate-DeliveryDate > marketdate-Enddate.
+        ELSEIF marketdate-Enddate IS NOT INITIAL AND orderdate-DeliveryDate > marketdate-Enddate.
           APPEND VALUE #( %tky = orderdate-%tky ) TO failed-marketorder.
           APPEND VALUE #(  %tky        = orderdate-%tky
                            %state_area = 'VALIDATE_DELIVERY_DATE'
@@ -266,6 +269,87 @@ CLASS lhc_marketorder IMPLEMENTATION.
              REPORTED DATA(update_reported).
 
     reported = CORRESPONDING #( DEEP update_reported ).
+
+  ENDMETHOD.
+
+  METHOD validateBussPartner.
+
+DATA business_data TYPE TABLE OF zkat2_sepm_i_businesspartner_e.
+*    DATA count TYPE int8.
+    DATA filter_conditions  TYPE if_rap_query_filter=>tt_name_range_pairs .
+    DATA ranges_table TYPE if_rap_query_filter=>tt_range_option .
+
+
+    READ ENTITIES OF zkat2_I_product IN LOCAL MODE
+    ENTITY MarketOrder
+    FIELDS ( BussPartner ) WITH CORRESPONDING #( keys )
+    RESULT DATA(insertedBussPartner).
+
+
+    LOOP AT insertedBussPartner INTO DATA(ls_insertedBussPartner).
+      APPEND VALUE #( %tky  = ls_insertedbusspartner-%tky
+                      %state_area = 'VALIDATE_BUSS_PARTNER' ) TO reported-marketorder.
+
+      IF ls_insertedbusspartner-BussPartner IS NOT INITIAL.
+
+        ranges_table = VALUE #( (  sign = 'I' option = 'GE'
+        low = ls_insertedbusspartner-BussPartner ) ).
+        filter_conditions = VALUE #( ( name = 'BUSINESSPARTNER'  range = ranges_table ) ).
+
+
+        TRY.
+            NEW zkat2_cl_bp_query_provider( )->get_business_partners(
+              EXPORTING
+                filter_cond        = filter_conditions
+                is_count_requested = abap_true
+                is_data_requested  = abap_true
+              IMPORTING
+                business_data  = business_data
+
+              ) .
+
+          CATCH /iwbep/cx_cp_remote
+                /iwbep/cx_gateway
+                cx_web_http_client_error
+                cx_http_dest_provider_error
+   INTO DATA(exception).
+            DATA(exception_message) = cl_message_helper=>get_latest_t100_exception( exception )->if_message~get_longtext( ) .
+
+            APPEND VALUE #( %tky = ls_insertedbusspartner-%tky ) TO failed-marketorder.
+            APPEND VALUE #(
+              %tky                     = ls_insertedbusspartner-%tky
+              %state_area              = 'VALIDATE_BUSS_PARTNER'
+              %msg                     =  new_message_with_text( severity = if_abap_behv_message=>severity-error text = exception_message )
+              %element-busspartner = if_abap_behv=>mk-on )
+              TO reported-marketorder.
+
+            RETURN.
+
+
+        ENDTRY.
+
+      ELSEIF ls_insertedbusspartner-BussPartner IS INITIAL
+      OR NOT line_exists( business_data[ BusinessPartner = ls_insertedbusspartner-BussPartner ] ).
+
+        APPEND VALUE #( %tky = ls_insertedbusspartner-%tky ) TO failed-marketorder.
+        APPEND VALUE #(
+          %tky                     = ls_insertedbusspartner-%tky
+          %state_area              = 'VALIDATE_BUSS_PARTNER'
+          %msg                     =  NEW zcm_kat2_products(
+          severity = if_abap_behv_message=>severity-error
+          textid          = zcm_kat2_products=>invalid_business_partner
+          BussPartner = ls_insertedbusspartner-BussPartner  )
+          %element-busspartner = if_abap_behv=>mk-on )
+          TO reported-marketorder.
+
+
+      ENDIF.
+
+    ENDLOOP.
+
+
+
+
 
   ENDMETHOD.
 

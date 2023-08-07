@@ -1,0 +1,5 @@
+@EndUserText.label: 'ZKAT2_SC_BUSINESS_PARTNER'
+@OData.schema.name: 'ZE2E100_SOL_2_SRV'
+define service ZKAT2_SC_BUSINESS_PARTNER {
+ expose ZKAT2_SEPM_I_BUSINESSPARTNER_E; 
+ } 

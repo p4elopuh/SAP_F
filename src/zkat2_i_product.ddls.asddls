@@ -21,6 +21,7 @@ define root view entity zkat2_I_product
   key prod_uuid                                           as ProdUuid,
       prodid                                              as Prodid,
       pgid                                                as Pgid,
+      _ProductGroup.Pgname                                as Pgname,
       phaseid                                             as Phaseid,
 
       case Product.phaseid
@@ -36,7 +37,7 @@ define root view entity zkat2_I_product
       depth                                               as Depth,
       @Semantics.quantity.unitOfMeasure: 'SizeUom'
       width                                               as Width,
-//      @Semantics.quantity.unitOfMeasure: 'SizeUom'
+      //      @Semantics.quantity.unitOfMeasure: 'SizeUom'
       concat_with_space( concat_with_space( concat_with_space(cast(height as abap.char(20)), 'x', 1),
                                             concat_with_space(cast(depth as abap.char(20)), 'x', 1), 1),
                          cast(width as abap.char(20)), 1) as Measure,
@@ -46,6 +47,11 @@ define root view entity zkat2_I_product
       price                                               as Price,
       price_currency                                      as PriceCurrency,
       taxrate                                             as Taxrate,
+
+      /*-- External API --*/
+      pgname_trans                                        as PgnameTrans,
+      trans_code                                          as TransCode,
+
 
       /*-- Admin data --*/
       @Semantics.user.createdBy: true

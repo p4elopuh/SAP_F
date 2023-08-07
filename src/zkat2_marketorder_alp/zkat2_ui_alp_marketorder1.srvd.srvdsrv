@@ -1,0 +1,13 @@
+@EndUserText.label: 'Service Definition for MarketOrder ALP'
+define service ZKAT2_UI_ALP_MARKETORDER1 {
+  expose ZKAT2_C_ALP_MRKT_ORD1 as MarketOrderAnalysis;
+  expose zkat2_i_alp_mrkt_ord as BaseCDS;
+  expose zkat2_i_alp_product as Product;
+  expose zkat2_i_alp_prod_gr as ProductGroup;
+  expose zkat2_i_alp_phase as Phase;
+  expose zkat2_i_alp_market as Market;
+  expose zkat2_i_alp_pr_mrkt as ProductMarket;
+  expose zkat2_c_market_vh as ValueHelpMarket;
+  expose zkat2_c_pg_vh as ValueHelpProductGroup;
+  expose zkat2_c_phase_vh as ValueHelpPhase;
+}

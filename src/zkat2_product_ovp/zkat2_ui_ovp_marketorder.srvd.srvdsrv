@@ -1,0 +1,14 @@
+@EndUserText.label: 'Service Definition for MarketOrder OVP'
+define service Zkat2_ui_ovp_marketorder {
+  expose ZKAT2_c_ovp_cards_MRKT_ORD as OVPCards;
+  expose ZKAT2_c_ovp_glob_filt_MRKT_ORD as GlobalFilters;
+  expose zkat2_i_ovp_mrkt_ord as BaseCDS;
+  expose ZKAT2_I_OVP_PRODUCT as Product;
+  expose zkat2_i_ovp_prod_gr as ProductGroup;
+  expose zkat2_i_ovp_phase as Phase;
+  expose zkat2_i_ovp_market as Market;
+  expose ZKAT2_I_OVP_PR_MRKT as ProductMarket;
+  expose zkat2_c_market_vh as ValueHelpMarket;
+  expose zkat2_c_pg_vh as ValueHelpProductGroup;
+  expose zkat2_c_phase_vh as ValueHelpPhase;
+}

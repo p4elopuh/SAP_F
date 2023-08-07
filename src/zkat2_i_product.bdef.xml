@@ -5,7 +5,7 @@
    <BDEF>
     <NAME>ZKAT2_I_PRODUCT</NAME>
     <TYPE>BDEF/BDO</TYPE>
-    <DESCRIPTION>Basic CDS view Product</DESCRIPTION>
+    <DESCRIPTION>Behavior Definition for Base CDS view Product</DESCRIPTION>
     <DESCRIPTION_TEXT_LIMIT>60</DESCRIPTION_TEXT_LIMIT>
     <LANGUAGE>EN</LANGUAGE>
     <LINKS>
@@ -30,12 +30,6 @@
       <HREF>./zkat2_i_product/objectstructure</HREF>
       <REL>http://www.sap.com/adt/relations/objectstructure</REL>
       <TITLE>Object Structure</TITLE>
-     </item>
-     <item>
-      <HREF>/sap/bc/adt/vit/wb/object_type/bdefbdo/object_name/ZKAT2_I_PRODUCT</HREF>
-      <REL>self</REL>
-      <TYPE>application/vnd.sap.sapgui</TYPE>
-      <TITLE>Representation in SAP GUI</TITLE>
      </item>
     </LINKS>
     <MASTER_LANGUAGE>EN</MASTER_LANGUAGE>

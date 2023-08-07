@@ -134,9 +134,36 @@ CLASS zcm_kat2_products DEFINITION
         attr2 TYPE scx_attrname VALUE '',
         attr3 TYPE scx_attrname VALUE '',
         attr4 TYPE scx_attrname VALUE '',
-      END OF markets_not_completed
+      END OF markets_not_completed,
 
+      BEGIN OF invalid_business_partner,
+        msgid TYPE symsgid VALUE 'ZKAT2_RAP_MSG',
+        msgno TYPE symsgno VALUE '015',
+        attr1 TYPE scx_attrname VALUE 'BUSSPARTNER',
+        attr2 TYPE scx_attrname VALUE '',
+        attr3 TYPE scx_attrname VALUE '',
+        attr4 TYPE scx_attrname VALUE '',
+      END OF invalid_business_partner
 
+,
+
+      BEGIN OF missed_business_partner,
+        msgid TYPE symsgid VALUE 'ZKAT2_RAP_MSG',
+        msgno TYPE symsgno VALUE '016',
+        attr1 TYPE scx_attrname VALUE '',
+        attr2 TYPE scx_attrname VALUE '',
+        attr3 TYPE scx_attrname VALUE '',
+        attr4 TYPE scx_attrname VALUE '',
+      END OF missed_business_partner,
+
+      BEGIN OF action_successful,
+        msgid TYPE symsgid VALUE 'ZKAT2_RAP_MSG',
+        msgno TYPE symsgno VALUE '017',
+        attr1 TYPE scx_attrname VALUE '',
+        attr2 TYPE scx_attrname VALUE '',
+        attr3 TYPE scx_attrname VALUE '',
+        attr4 TYPE scx_attrname VALUE '',
+      END OF action_successful
 
       .
 
@@ -156,13 +183,15 @@ CLASS zcm_kat2_products DEFINITION
         enddate    TYPE zkat2_end_date OPTIONAL
         mrktid   TYPE zkat2_market_id OPTIONAL
         prodid   TYPE zkat2_product_id OPTIONAL
-        pgid     TYPE zkat2_pg_id OPTIONAL.
+        pgid     TYPE zkat2_pg_id OPTIONAL
+        busspartner type zkat2_business_partner OPTIONAL.
 
     DATA pgid TYPE string READ-ONLY.
     DATA prodid TYPE string READ-ONLY.
     DATA mrktid TYPE string READ-ONLY.
     DATA startdate TYPE string READ-ONLY.
     DATA enddate TYPE string READ-ONLY.
+    DATA busspartner TYPE string READ-ONLY.
 
 
   PROTECTED SECTION.
@@ -171,7 +200,7 @@ ENDCLASS.
 
 
 
-CLASS zcm_kat2_products IMPLEMENTATION.
+CLASS ZCM_KAT2_PRODUCTS IMPLEMENTATION.
 
 
   METHOD constructor  ##ADT_SUPPRESS_GENERATION.
@@ -191,8 +220,8 @@ CLASS zcm_kat2_products IMPLEMENTATION.
     me->mrktid = |{ mrktid ALPHA = OUT }|.
     me->pgid = |{ pgid ALPHA = OUT }|.
     me->prodid = |{ prodid ALPHA = OUT }|.
+    me->busspartner = |{ busspartner ALPHA = OUT }|.
 *  Note: The alpha conversion is used for all parameters of type NUMC.
 
   ENDMETHOD.
-
 ENDCLASS.

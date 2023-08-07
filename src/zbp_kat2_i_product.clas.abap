@@ -1,5 +1,9 @@
 CLASS zbp_kat2_i_product DEFINITION PUBLIC ABSTRACT FINAL FOR BEHAVIOR OF zkat2_i_product.
+protected section.
+private section.
 ENDCLASS.
 
-CLASS zbp_kat2_i_product IMPLEMENTATION.
+
+
+CLASS ZBP_KAT2_I_PRODUCT IMPLEMENTATION.
 ENDCLASS.

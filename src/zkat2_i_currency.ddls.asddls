@@ -7,6 +7,8 @@
     sizeCategory: #S,
     dataClass: #MIXED
 }
+@ObjectModel.resultSet.sizeCategory: #XS
+
 define view entity ZKAT2_I_CURRENCY
   as select from I_Currency as Currency
 {

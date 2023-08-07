@@ -37,10 +37,10 @@ define root view entity zkat2_c_product
       //      selectionField: [{position: 20 }] }
       @EndUserText.label: 'Product Group'
       @Consumption.valueHelpDefinition: [{entity: {name: 'zkat2_i_pg', element: 'Pgid' }}]
-      @ObjectModel.text.element: ['PGName']
+      @ObjectModel.text.element: ['Pgname']
       @Search.defaultSearchElement: true
       Pgid,
-      _ProductGroup.Pgname   as PGName,
+      Pgname,
 
       //      @UI: {
       //      lineItem: [{position: 30, importance: #HIGH }],
@@ -115,6 +115,17 @@ define root view entity zkat2_c_product
       @Semantics.imageUrl: true
       _ProductGroup.Imageurl as ImageUrl,
 
+      
+      PgnameTrans,
+      
+      @Consumption.valueHelpDefinition: [{ 
+                                           entity : { name:    'zkat2_c_trans_code_vh', 
+                                                      element: 'LanguageISOCode' } 
+                                        }]
+      
+      TransCode,
+      
+      
       //      @UI.hidden: true
       CreatedBy,
       //      @UI.hidden: true

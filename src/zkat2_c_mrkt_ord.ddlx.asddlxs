@@ -81,12 +81,28 @@ annotate view ZKAT2_C_MRKT_ORD
         position: 10,
         targetQualifier: 'DataGroup'
         },
+        
+     {label: 'Business Partner', 
+        id: 'BusinessPartner',
+              purpose: #STANDARD,
+              type: #COLLECTION,
+              position: 20
+             },
+
+            { label: 'Business Partner Info',
+            id: 'PartnerData',
+              purpose: #STANDARD,
+              type: #FIELDGROUP_REFERENCE,
+              parentId: 'BusinessPartner',
+              position: 10,
+              targetQualifier: 'PartnerGroup'
+             },
 
     {label: 'Admin Data',
       id: 'AdminData',
            purpose: #STANDARD,
       type: #COLLECTION,
-      position: 20
+      position: 30
      },
 
 
@@ -124,6 +140,9 @@ annotate view ZKAT2_C_MRKT_ORD
               position: 10
              }
      ]
+  
+//  @UI.lineItem:       [ { type: #FOR_ACTION, dataAction: 'ConfirmOS', label: 'ConfirmOS', position: 10 } ]
+//  @UI.identification: [ { type: #FOR_ACTION, dataAction: 'ConfirmOS', label: 'ConfirmOS', position: 10 } ]
     
     
     @UI.hidden: true
@@ -137,6 +156,7 @@ annotate view ZKAT2_C_MRKT_ORD
     
     
     @UI.lineItem: [ { position: 10, importance: #HIGH } ]
+    @UI.selectionField: [ { position: 10 } ]
     //@UI.identification: [{position: 10, label: 'Order' }]
     @UI.dataPoint: { qualifier: 'OrdID', title: 'Order ID:' } --header
   @UI.fieldGroup: [ { qualifier: 'DataGroup', position: 10} ]
@@ -168,6 +188,31 @@ annotate view ZKAT2_C_MRKT_ORD
     //@UI.hidden: true
     //Amountcurr;
     
+    
+   @UI.lineItem: [ { position: 65, importance: #HIGH } ]
+   @UI.selectionField: [ { position: 20 } ]
+   @UI.textArrangement: #TEXT_ONLY
+   @UI.fieldGroup: [{ qualifier: 'PartnerGroup', position: 10 } ]
+//    @UI: { lineItem:       [ { position: 65, importance: #HIGH } ],
+//       textArrangement: #TEXT_ONLY,
+//       fieldGroup: [{ qualifier: 'PartnerGroup', position: 10 } ] }
+  BussPartner;
+  
+    @UI: { fieldGroup: [{ qualifier: 'PartnerGroup', position: 20 } ] }
+  BPEmail;
+
+  @UI: { fieldGroup: [{ qualifier: 'PartnerGroup', position: 30 } ] }
+  BPPhone;
+
+//  @UI: { fieldGroup: [{ qualifier: 'PartnerGroup', position: 20 } ] }
+//  BussPartnerGroup;
+//
+//  @UI: { fieldGroup: [{ qualifier: 'PartnerGroup', position: 30 } ] }
+//  BussPartnerName;
+
+@UI.lineItem: [ { position: 70 } ]
+@UI.fieldGroup: [ { qualifier: 'DataGroup', position: 15, criticality: 'StatusCriticality'} ]
+Status;
     
     @UI.fieldGroup: [ { qualifier: 'CreateGroup', position: 10} ]
   CreatedBy;

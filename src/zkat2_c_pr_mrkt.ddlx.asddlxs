@@ -158,6 +158,13 @@ annotate view ZKAT2_C_PR_MRKT with
   @UI.fieldGroup: [ { qualifier: 'DataGroup', position: 10} ]
   @UI.textArrangement: #TEXT_ONLY
   Mrktid;
+  
+  @UI.lineItem: [ { position: 15 , label: 'ISO-Code' } ]
+  @UI.identification: [{position: 15, label: 'Country ISO-Code' }]
+  @UI.dataPoint: { qualifier: 'Country', title: 'ISO-Code:' }
+  @UI.fieldGroup: [ { qualifier: 'DataGroup', position: 15} ]
+  //@UI.textArrangement: #TEXT_ONLY
+  Isocode;
 
   @UI.lineItem: [ { position: 20, criticality: 'StatusCriticality' } ]
   @UI.selectionField: [{position: 20}]
@@ -172,7 +179,7 @@ annotate view ZKAT2_C_PR_MRKT with
 
   @UI.lineItem: [ { position: 40 } ]
   @UI.dataPoint: { qualifier: 'MrktEnd', title: 'End Date:' }
-  @UI.fieldGroup: [ { qualifier: 'DataGroup', position: 30} ]
+  @UI.fieldGroup: [ { qualifier: 'DataGroup', position: 40} ]
   Enddate;
   
   @UI.lineItem: [{ position: 50, importance: #HIGH }]

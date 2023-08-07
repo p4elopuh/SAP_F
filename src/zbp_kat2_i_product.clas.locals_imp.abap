@@ -32,6 +32,12 @@ CLASS lhc_Product DEFINITION INHERITING FROM cl_abap_behavior_handler.
     METHODS CalculateProdID FOR DETERMINE ON SAVE
       IMPORTING keys FOR Product~CalculateProdID.
 
+    METHODS GetPgnameTransl FOR MODIFY
+      IMPORTING keys FOR ACTION Product~GetPgnameTransl RESULT result.
+
+    METHODS SetPgnameTranslation FOR DETERMINE ON SAVE
+      IMPORTING keys FOR Product~SetPgnameTranslation.
+
 ENDCLASS.
 
 CLASS lhc_Product IMPLEMENTATION.
@@ -51,13 +57,11 @@ CLASS lhc_Product IMPLEMENTATION.
           LET is_outed =   COND #( WHEN product-Phaseid = phase_out-out
                                       THEN if_abap_behv=>fc-o-disabled
                                       ELSE if_abap_behv=>fc-o-enabled  )
-*              is_rejected =   COND #( WHEN travel-TravelStatus = travel_status-canceled
-*                                      THEN if_abap_behv=>fc-o-disabled
-*                                      ELSE if_abap_behv=>fc-o-enabled )
+
           IN
             ( %tky                 = product-%tky
               %action-MoveToNextPhase = is_outed
-*              %action-rejectTravel = is_rejected
+              %action-GetPgnameTransl = if_abap_behv=>fc-o-disabled
              ) ).
 
   ENDMETHOD.
@@ -143,9 +147,11 @@ CLASS lhc_Product IMPLEMENTATION.
   METHOD MoveToNextPhase.
 
     DATA lt_phase TYPE TABLE FOR UPDATE zkat2_i_product\\Product.
+    DATA lv_status TYPE zkat2_mrkt_status.
+    DATA lv_phaseid TYPE zkat2_phase_id.
+    DATA lv_enddate TYPE zkat2_end_date.
 
     "Read the phase of existing product
-
     READ ENTITIES OF zkat2_I_product IN LOCAL MODE
         ENTITY Product
           FIELDS ( Phaseid ) WITH CORRESPONDING #( keys )
@@ -153,126 +159,256 @@ CLASS lhc_Product IMPLEMENTATION.
         FAILED failed
         REPORTED reported.
 
-    LOOP AT products ASSIGNING FIELD-SYMBOL(<product>).
+*  Var 1
+**********************************************************************
+*    LOOP AT products ASSIGNING FIELD-SYMBOL(<product>).
+*
+*      CASE <product>-Phaseid.
+*
+*        WHEN 1.
+*
+*          "Insert conditions for child entity!!!!!
+*          READ ENTITIES OF zkat2_I_product IN LOCAL MODE
+*          ENTITY Product BY \_ProductMarket
+*          FIELDS ( Mrktid ProdUuid ) WITH CORRESPONDING #( keys )
+*          RESULT DATA(markets)
+*          FAILED failed.
+*
+*          IF markets IS NOT INITIAL.
+*            <product>-Phaseid += 1.
+*          ELSE.
+*            APPEND VALUE #(  %tky = <product>-%tky ) TO failed-product.
+*
+*            APPEND VALUE #(  %tky        = <product>-%tky
+*                             %state_area = 'NO_MARKETS'
+*                             %msg        = NEW zcm_kat2_products(
+*                                               severity   = if_abap_behv_message=>severity-error
+*                                               textid     = zcm_kat2_products=>no_markets )
+*                             %element-PhaseId = if_abap_behv=>mk-on
+*                              )
+*              TO reported-product.
+*          ENDIF.
+*
+*
+*        WHEN 2.
+*
+*          "Insert conditions for child entity!!!!!
+*          READ ENTITIES OF zkat2_I_product IN LOCAL MODE
+*          ENTITY Product BY \_ProductMarket
+*          FIELDS ( Status ) WITH CORRESPONDING #( keys )
+*          RESULT DATA(statuses)
+*          FAILED failed.
+*
+*          LOOP AT statuses ASSIGNING FIELD-SYMBOL(<status>).
+*            IF <status>-Status EQ 'X'.
+**              DATA(lv_status) = 'X'.
+*              lv_status = 'X'.
+*              EXIT.
+*            ENDIF.
+*          ENDLOOP.
+*          IF lv_status = 'X'.
+*
+*            <product>-Phaseid += 1.
+*          ELSE.
+*            APPEND VALUE #(  %tky = <product>-%tky ) TO failed-product.
+*
+*            APPEND VALUE #(  %tky        = <product>-%tky
+*                             %state_area = 'NOT_CONFIRMED'
+*                             %msg        = NEW zcm_kat2_products(
+*                                               severity   = if_abap_behv_message=>severity-error
+*                                               textid     = zcm_kat2_products=>not_confirmed )
+*                             %element-PhaseId = if_abap_behv=>mk-on
+*                              )
+*              TO reported-product.
+*          ENDIF.
+*
+*        WHEN 3.
+*
+*          DATA(lv_date) = cl_abap_context_info=>get_system_date( ).
+*
+*          "Insert conditions for child entity!!!!!
+*          READ ENTITIES OF zkat2_I_product IN LOCAL MODE
+*          ENTITY Product BY \_ProductMarket
+*          FIELDS ( Enddate ) WITH CORRESPONDING #( keys )
+*          RESULT DATA(enddates)
+*          FAILED failed.
+*
+*          LOOP AT enddates ASSIGNING FIELD-SYMBOL(<enddate>).
+*            IF <enddate>-Enddate > lv_date.
+*              DATA(lv_enddate) = 'X'.
+*              EXIT.
+*            ENDIF.
+*          ENDLOOP.
+*
+*          IF lv_enddate NE 'X'.
+*            <product>-Phaseid += 1.
+*          ELSE.
+*            APPEND VALUE #(  %tky = <product>-%tky ) TO failed-product.
+*
+*            APPEND VALUE #(  %tky        = <product>-%tky
+*                             %state_area = 'MARKETS_NOT_COMPLETED'
+*                             %msg        = NEW zcm_kat2_products(
+*                                               severity   = if_abap_behv_message=>severity-error
+*                                               textid     = zcm_kat2_products=>markets_not_completed )
+*                             %element-PhaseId = if_abap_behv=>mk-on
+*                              )
+*              TO reported-product.
+*          ENDIF.
+*
+*      ENDCASE.
+*
+*      APPEND VALUE #(
+*             %tky             = <product>-%tky
+*             PhaseID          = <product>-PhaseId
+*             %control-PhaseID = if_abap_behv=>mk-on ) TO lt_phase.
+*
+*    ENDLOOP.
+**********************************************************************
+*  Var 2
+**********************************************************************
+    lv_phaseid = products[ 1 ]-Phaseid.
 
-      CASE <product>-Phaseid.
+* LOOP AT products ASSIGNING FIELD-SYMBOL(<product>).
 
-        WHEN 1.
+    CASE lv_phaseid.
 
-          "Insert conditions for child entity!!!!!
-          READ ENTITIES OF zkat2_I_product IN LOCAL MODE
-          ENTITY Product BY \_ProductMarket
-          FIELDS ( Mrktid ProdUuid ) WITH CORRESPONDING #( keys )
-          RESULT DATA(markets)
-          FAILED failed.
+      WHEN 1.
 
-          IF markets IS NOT INITIAL.
-            <product>-Phaseid += 1.
-          ELSE.
-            APPEND VALUE #(  %tky = <product>-%tky ) TO failed-product.
+        "Insert conditions for child entity!!!!!
+        READ ENTITIES OF zkat2_I_product IN LOCAL MODE
+        ENTITY Product BY \_ProductMarket
+        FIELDS ( Mrktid ProdUuid ) WITH CORRESPONDING #( keys )
+        RESULT DATA(markets)
+        FAILED failed.
 
-            APPEND VALUE #(  %tky        = <product>-%tky
-                             %state_area = 'NO_MARKETS'
-                             %msg        = NEW zcm_kat2_products(
-                                               severity   = if_abap_behv_message=>severity-error
-                                               textid     = zcm_kat2_products=>no_markets )
-                             %element-PhaseId = if_abap_behv=>mk-on
-                              )
-              TO reported-product.
+        IF markets IS NOT INITIAL.
+          lv_phaseid += 1.
+        ELSE.
+          APPEND VALUE #(  %tky = products[ 1 ]-%tky )  TO failed-product.
+
+          APPEND VALUE #(  %tky        = products[ 1 ]-%tky
+                           %state_area = 'NO_MARKETS'
+                           %msg        = NEW zcm_kat2_products(
+                                             severity   = if_abap_behv_message=>severity-error
+*                                             severity   = if_abap_behv_message=>severity-information
+                                             textid     = zcm_kat2_products=>no_markets )
+                           %element-PhaseId = if_abap_behv=>mk-on
+*                           %action-MoveToNextPhase = if_abap_behv=>mk-on
+                            )
+            TO reported-product.
+        ENDIF.
+
+
+      WHEN 2.
+
+        "Insert conditions for child entity!!!!!
+        READ ENTITIES OF zkat2_I_product IN LOCAL MODE
+        ENTITY Product BY \_ProductMarket
+        FIELDS ( Status ) WITH CORRESPONDING #( keys )
+        RESULT DATA(statuses)
+        FAILED failed.
+
+        LOOP AT statuses ASSIGNING FIELD-SYMBOL(<status>).
+          IF <status>-Status EQ 'X'.
+
+            lv_status = 'X'.
+            EXIT.
           ENDIF.
+        ENDLOOP.
+        IF lv_status = 'X'.
+
+          lv_phaseid += 1.
+        ELSE.
+          APPEND VALUE #(  %tky = products[ 1 ]-%tky ) TO failed-product.
+
+          APPEND VALUE #(  %tky        = products[ 1 ]-%tky
+                           %state_area = 'NOT_CONFIRMED'
+                           %msg        = NEW zcm_kat2_products(
+                                             severity   = if_abap_behv_message=>severity-error
+                                             textid     = zcm_kat2_products=>not_confirmed
+                                              )
+                           %element-PhaseId = if_abap_behv=>mk-on
+                            )
+            TO reported-product.
+        ENDIF.
+
+      WHEN 3.
+
+        DATA(lv_date) = cl_abap_context_info=>get_system_date( ).
 
 
-        WHEN 2.
+        "Insert conditions for child entity!!!!!
+        READ ENTITIES OF zkat2_I_product IN LOCAL MODE
+        ENTITY Product BY \_ProductMarket
+        FIELDS ( Enddate ) WITH CORRESPONDING #( keys )
+        RESULT DATA(enddates)
+        FAILED failed.
 
-          "Insert conditions for child entity!!!!!
-          READ ENTITIES OF zkat2_I_product IN LOCAL MODE
-          ENTITY Product BY \_ProductMarket
-          FIELDS ( Status ) WITH CORRESPONDING #( keys )
-          RESULT DATA(statuses)
-          FAILED failed.
-
-          LOOP AT statuses ASSIGNING FIELD-SYMBOL(<status>).
-            IF <status>-Status EQ 'X'.
-              DATA(lv_status) = 'X'.
-              EXIT.
-            ENDIF.
-          ENDLOOP.
-          IF lv_status = 'X'.
-
-            <product>-Phaseid += 1.
-          ELSE.
-            APPEND VALUE #(  %tky = <product>-%tky ) TO failed-product.
-
-            APPEND VALUE #(  %tky        = <product>-%tky
-                             %state_area = 'NOT_CONFIRMED'
-                             %msg        = NEW zcm_kat2_products(
-                                               severity   = if_abap_behv_message=>severity-error
-                                               textid     = zcm_kat2_products=>not_confirmed )
-                             %element-PhaseId = if_abap_behv=>mk-on
-                              )
-              TO reported-product.
+        LOOP AT enddates ASSIGNING FIELD-SYMBOL(<enddate>).
+          IF <enddate>-Enddate > lv_date.
+*              DATA(lv_enddate) = 'X'.
+            lv_enddate = 'X'.
+            EXIT.
           ENDIF.
+        ENDLOOP.
 
-        WHEN 3.
+        IF lv_enddate NE 'X'.
+          lv_phaseid += 1.
+        ELSE.
+          APPEND VALUE #(  %tky = products[ 1 ]-%tky ) TO failed-product.
 
-          DATA(lv_date) = cl_abap_context_info=>get_system_date( ).
+          APPEND VALUE #(  %tky        = products[ 1 ]-%tky
+                           %state_area = 'MARKETS_NOT_COMPLETED'
+                           %msg        = NEW zcm_kat2_products(
+                                             severity   = if_abap_behv_message=>severity-error
+                                             textid     = zcm_kat2_products=>markets_not_completed )
+                           %element-PhaseId = if_abap_behv=>mk-on
+                            )
+            TO reported-product.
+        ENDIF.
 
-          "Insert conditions for child entity!!!!!
-          READ ENTITIES OF zkat2_I_product IN LOCAL MODE
-          ENTITY Product BY \_ProductMarket
-          FIELDS ( Enddate ) WITH CORRESPONDING #( keys )
-          RESULT DATA(enddates)
-          FAILED failed.
-
-          LOOP AT enddates ASSIGNING FIELD-SYMBOL(<enddate>).
-            IF <enddate>-Enddate > lv_date.
-              DATA(lv_enddate) = 'X'.
-              EXIT.
-            ENDIF.
-          ENDLOOP.
-
-          IF lv_enddate NE 'X'.
-            <product>-Phaseid += 1.
-          ELSE.
-            APPEND VALUE #(  %tky = <product>-%tky ) TO failed-product.
-
-            APPEND VALUE #(  %tky        = <product>-%tky
-                             %state_area = 'MARKETS_NOT_COMPLETED'
-                             %msg        = NEW zcm_kat2_products(
-                                               severity   = if_abap_behv_message=>severity-error
-                                               textid     = zcm_kat2_products=>markets_not_completed )
-                             %element-PhaseId = if_abap_behv=>mk-on
-                              )
-              TO reported-product.
-          ENDIF.
-
-      ENDCASE.
+    ENDCASE.
+**********************************************************************
+    IF lv_phaseid NE products[ 1 ]-Phaseid.
 
       APPEND VALUE #(
-             %tky             = <product>-%tky
-             PhaseID          = <product>-PhaseId
+             %tky             = products[ 1 ]-%tky
+             PhaseID          = lv_phaseid
              %control-PhaseID = if_abap_behv=>mk-on ) TO lt_phase.
 
-    ENDLOOP.
 
-    " Set the new overall status
-    MODIFY ENTITIES OF zkat2_I_product IN LOCAL MODE
-      ENTITY Product
-         UPDATE
-           FIELDS ( Phaseid )
-           WITH lt_phase
+
+
+      " Set the new Phase
+      MODIFY ENTITIES OF zkat2_I_product IN LOCAL MODE
+        ENTITY Product
+           UPDATE
+             FIELDS ( Phaseid )
+             WITH lt_phase
       FAILED failed
-      REPORTED reported.
+      REPORTED reported
+        .
 
-    " Fill the response table
-    READ ENTITIES OF zkat2_I_product IN LOCAL MODE
-      ENTITY Product
-        ALL FIELDS WITH CORRESPONDING #( keys )
-      RESULT DATA(new_products).
+      " Fill the response table
+      READ ENTITIES OF zkat2_I_product IN LOCAL MODE
+        ENTITY Product
+          ALL FIELDS WITH CORRESPONDING #( keys )
+        RESULT DATA(new_products).
 
-    result = VALUE #( FOR product IN new_products
-                        ( %tky   = product-%tky
-                          %param = product ) ).
+      result = VALUE #( FOR product IN new_products
+                          ( %tky   = product-%tky
+                            %param = product ) ).
+
+      "add success MESSAGE at the END of the action
+      APPEND VALUE #( %tky        = products[ 1 ]-%tky
+                      %msg = NEW zcm_kat2_products(
+                               textid        = zcm_kat2_products=>action_successful
+                               severity      = if_abap_behv_message=>severity-success  )
+                      %element-PhaseId = if_abap_behv=>mk-on
+                      %action-MoveToNextPhase    = if_abap_behv=>mk-on
+               ) TO reported-product.
+
+    ENDIF.
 
   ENDMETHOD.
 
@@ -295,9 +431,14 @@ CLASS lhc_Product IMPLEMENTATION.
     ENTITY product
       UPDATE
         FIELDS ( Phaseid )
-        WITH VALUE #( FOR product IN products
-                      ( %tky         = product-%tky
-                        Phaseid = '1' ) )
+*        WITH VALUE #( FOR product IN products
+*                      ( %tky         = product-%tky
+*                        Phaseid = '1' ) )  "Plan
+        WITH VALUE #( FOR key IN keys
+                      ( %tky         = key-%tky
+                        Phaseid = '1' ) )  "Plan
+
+
     REPORTED DATA(update_reported).
 
     reported = CORRESPONDING #( DEEP update_reported ).
@@ -396,5 +537,51 @@ CLASS lhc_Product IMPLEMENTATION.
 
   METHOD CalculateProdID.
   ENDMETHOD.
+
+  METHOD GetPgnameTransl.
+
+  ENDMETHOD.
+
+  METHOD SetPgnameTranslation.
+
+    DATA lv_pgname_translated TYPE zkat2_d_product-pgname_trans.
+    DATA lt_pgname_up TYPE TABLE FOR UPDATE zkat2_i_product\\Product.
+
+    READ ENTITIES OF zkat2_i_product IN LOCAL MODE
+      ENTITY Product
+        FIELDS ( Pgname TransCode ) WITH CORRESPONDING #( keys )
+    RESULT DATA(lt_pgname).
+
+    DATA(lv_pgname)    = lt_pgname[ 1 ]-Pgname.
+    DATA(lv_transcode) = lt_pgname[ 1 ]-TransCode.
+
+    " insert calling corresponding class
+**********************************************************************
+     zkat2_cl_call_external_api=>get_translation(
+                        EXPORTING
+                          ip_pgname = lv_pgname
+                          ip_trans_code = lv_transcode
+                        IMPORTING
+                          ep_pgname_translated = lv_pgname_translated
+                      ).
+
+**********************************************************************
+    MODIFY ENTITIES OF zkat2_i_product IN LOCAL MODE
+            ENTITY Product
+              UPDATE
+                FIELDS ( PgnameTrans )
+                WITH VALUE #(
+*                FOR ls_pgname IN lt_pgname
+                              ( %tky        = lt_pgname[ 1 ]-%tky
+                                PgnameTrans = lv_pgname_translated ) )
+*                 WITH VALUE #( FOR key IN keys
+*                      ( %tky         = key-%tky
+*                        PgnameTrans = lv_pgname_translated ) )  "
+            REPORTED DATA(update_reported).
+
+    reported = CORRESPONDING #( DEEP update_reported ).
+
+
+ENDMETHOD.
 
 ENDCLASS.

@@ -92,6 +92,24 @@
      <MSGNR>014</MSGNR>
      <TEXT>All Markets of the Product must be completed (End Dates &lt;= today)</TEXT>
     </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZKAT2_RAP_MSG</ARBGB>
+     <MSGNR>015</MSGNR>
+     <TEXT>Business Partner &amp;1 is invalid</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZKAT2_RAP_MSG</ARBGB>
+     <MSGNR>016</MSGNR>
+     <TEXT>Business Partner is missed!</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZKAT2_RAP_MSG</ARBGB>
+     <MSGNR>017</MSGNR>
+     <TEXT>Phase is successfully changed</TEXT>
+    </T100>
    </T100>
   </asx:values>
  </asx:abap>

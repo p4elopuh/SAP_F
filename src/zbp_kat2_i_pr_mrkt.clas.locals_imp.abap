@@ -1,10 +1,10 @@
 CLASS lhc_ProductMarket DEFINITION INHERITING FROM cl_abap_behavior_handler.
   PRIVATE SECTION.
 
-  CONSTANTS:
+    CONSTANTS:
       BEGIN OF status_confirmation,
         needed TYPE c LENGTH 1  VALUE ' ', "confirmation needed
-        stated type c length 1 value 'X', "confirmed
+        stated TYPE c LENGTH 1 VALUE 'X', "confirmed
       END OF status_confirmation.
 
     METHODS get_instance_features FOR INSTANCE FEATURES
@@ -28,6 +28,9 @@ CLASS lhc_ProductMarket DEFINITION INHERITING FROM cl_abap_behavior_handler.
     METHODS ValidateEndDate FOR VALIDATE ON SAVE
       IMPORTING keys FOR ProductMarket~ValidateEndDate.
 
+    METHODS SetIsoCode FOR DETERMINE ON SAVE
+      IMPORTING keys FOR ProductMarket~SetIsoCode.
+
 
 
 ENDCLASS.
@@ -36,7 +39,7 @@ CLASS lhc_ProductMarket IMPLEMENTATION.
 
   METHOD get_instance_features.
 
-  "Read the status of existing product
+    "Read the status of existing product
 
     READ ENTITIES OF zkat2_I_product IN LOCAL MODE
         ENTITY ProductMarket
@@ -54,6 +57,7 @@ CLASS lhc_ProductMarket IMPLEMENTATION.
           IN
             ( %tky                 = market-%tky
               %action-Confirm = is_confirmed
+
              ) ).
 
 
@@ -64,16 +68,16 @@ CLASS lhc_ProductMarket IMPLEMENTATION.
 
   METHOD Confirm.
 
-  MODIFY ENTITIES OF zkat2_i_product IN LOCAL MODE
-    ENTITY ProductMarket
-       UPDATE
-         FIELDS ( Status )
-         WITH VALUE #( FOR key IN keys
-                         ( %tky         = key-%tky
-                           Status = status_confirmation-stated
-                            ) )
-    FAILED failed
-    REPORTED reported.
+    MODIFY ENTITIES OF zkat2_i_product IN LOCAL MODE
+      ENTITY ProductMarket
+         UPDATE
+           FIELDS ( Status )
+           WITH VALUE #( FOR key IN keys
+                           ( %tky         = key-%tky
+                             Status = status_confirmation-stated
+                              ) )
+      FAILED failed
+      REPORTED reported.
 
     READ ENTITIES OF zkat2_i_product IN LOCAL MODE
       ENTITY ProductMarket
@@ -141,13 +145,13 @@ CLASS lhc_ProductMarket IMPLEMENTATION.
 
   METHOD CheckDuplicates.
 
-  READ ENTITIES OF zkat2_I_product IN LOCAL MODE
-        ENTITY ProductMarket
-          FIELDS ( ProdUuid Mrktid )
-          WITH CORRESPONDING #( keys )
-        RESULT DATA(productmarkets).
+    READ ENTITIES OF zkat2_I_product IN LOCAL MODE
+          ENTITY ProductMarket
+            FIELDS ( ProdUuid Mrktid )
+            WITH CORRESPONDING #( keys )
+          RESULT DATA(productmarkets).
 
-DATA: markets TYPE SORTED TABLE OF zkat2_i_pr_mrkt WITH UNIQUE KEY Mrktid.
+    DATA: markets TYPE SORTED TABLE OF zkat2_i_pr_mrkt WITH UNIQUE KEY Mrktid.
 
     markets = CORRESPONDING #( productmarkets DISCARDING DUPLICATES MAPPING Mrktid = Mrktid
                                                                             ProdUuid = ProdUuid EXCEPT * ).
@@ -156,7 +160,7 @@ DATA: markets TYPE SORTED TABLE OF zkat2_i_pr_mrkt WITH UNIQUE KEY Mrktid.
     IF markets IS NOT INITIAL.
       SELECT FROM zkat2_i_pr_mrkt FIELDS Mrktid, ProdUuid
         FOR ALL ENTRIES IN @markets
-        WHERE Mrktid = @markets-Mrktid and ProdUuid = @markets-ProdUuid
+        WHERE Mrktid = @markets-Mrktid AND ProdUuid = @markets-ProdUuid
 
         INTO TABLE @DATA(market_db).
     ENDIF.
@@ -171,15 +175,14 @@ DATA: markets TYPE SORTED TABLE OF zkat2_i_pr_mrkt WITH UNIQUE KEY Mrktid.
                         %state_area = 'CHECK_DUPLICATES'
                         %msg                   = NEW zcm_kat2_products(
                                                         textid    = zcm_kat2_products=>mrkt_duplicated
-                                                        severity  = if_abap_behv_message=>severity-error )
+                                                        severity  = if_abap_behv_message=>severity-error
+                                                        )
                         %element-mrktid = if_abap_behv=>mk-on
                         %path                  = VALUE #(  Product-%is_draft = productmarket-%is_draft
                                                 Product-ProdUuid = productmarket-ProdUuid )
                       ) TO reported-productmarket.
       ENDIF.
     ENDLOOP.
-
-
 
   ENDMETHOD.
 
@@ -210,7 +213,7 @@ DATA: markets TYPE SORTED TABLE OF zkat2_i_pr_mrkt WITH UNIQUE KEY Mrktid.
                                                  textid    = zcm_kat2_products=>start_date_absent
 *                                                 startdate = market-Startdate
                                                  )
-*                        %element-startdate = if_abap_behv=>mk-on
+                        %element-startdate = if_abap_behv=>mk-on
                         %path       = VALUE #( Product-%is_draft = market-%is_draft
                                                 Product-ProdUuid = market-ProdUuid )
                         ) TO reported-productmarket.
@@ -224,7 +227,7 @@ DATA: markets TYPE SORTED TABLE OF zkat2_i_pr_mrkt WITH UNIQUE KEY Mrktid.
                                                  textid    = zcm_kat2_products=>start_date_before_system_date
 *                                                 startdate = market-Startdate
                                                  )
-*                        %element-startdate = if_abap_behv=>mk-on
+                        %element-startdate = if_abap_behv=>mk-on
                         %path       = VALUE #( Product-%is_draft = market-%is_draft
                                                 Product-ProdUuid = market-ProdUuid )
                         ) TO reported-productmarket.
@@ -259,7 +262,7 @@ DATA: markets TYPE SORTED TABLE OF zkat2_i_pr_mrkt WITH UNIQUE KEY Mrktid.
                                                    textid    = zcm_kat2_products=>end_date_before_start_date
 *                                                 startdate = market-Startdate
                                                    )
-*                        %element-startdate = if_abap_behv=>mk-on
+                        %element-enddate = if_abap_behv=>mk-on
                           %path       = VALUE #( Product-%is_draft = market-%is_draft
                                                   Product-ProdUuid = market-ProdUuid )
                           ) TO reported-productmarket.
@@ -267,6 +270,87 @@ DATA: markets TYPE SORTED TABLE OF zkat2_i_pr_mrkt WITH UNIQUE KEY Mrktid.
       ENDIF.
 
     ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD SetIsoCode.
+
+    READ ENTITIES OF zkat2_I_product IN LOCAL MODE
+            ENTITY ProductMarket
+              FIELDS ( Mrktid Isocode ) WITH CORRESPONDING #( keys )
+            RESULT DATA(market).
+
+    LOOP AT market ASSIGNING FIELD-SYMBOL(<fs_market>).
+      SELECT SINGLE FROM zkat2_d_market
+      FIELDS mrktname
+*      FIELDS code
+      WHERE mrktid = @<fs_market>-Mrktid
+      INTO @DATA(lv_country_code).
+
+      TRY.
+          DATA(destination) = cl_soap_destination_provider=>create_by_url(
+                  i_url = 'http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso' ).
+
+
+          DATA(proxy) = NEW zkat2_co_country_info_service(
+                          destination = destination      ).
+
+          DATA(request) = VALUE zkat2_country_isocode_soap_req( s_country_name = lv_country_code ).
+
+          proxy->country_isocode(
+            EXPORTING
+              input = request
+            IMPORTING
+              output = DATA(response)
+          ).
+
+
+          "handle response
+        CATCH cx_soap_destination_error.
+          "handle error
+        CATCH cx_ai_system_fault.
+          "handle error
+      ENDTRY.
+
+*    ENDLOOP.
+
+      IF response-country_isocode_result NE 'No country found by that name'
+      AND (  <fs_market>-Isocode IS INITIAL OR <fs_market>-Isocode NE response-country_isocode_result ).
+        MODIFY ENTITIES OF zkat2_I_product IN LOCAL MODE
+        ENTITY ProductMarket
+        UPDATE FIELDS ( Isocode ) WITH VALUE #(
+        FOR key IN keys ( %tky = <fs_market>-%tky
+        Isocode = response-country_isocode_result )
+         ).
+
+      ELSEIF  response-country_isocode_result EQ 'No country found by that name'
+
+      AND <fs_market>-Isocode NE space
+
+*    AND <fs_market>-Isocode IS NOT INITIAL
+      .
+        MODIFY ENTITIES OF zkat2_I_product IN LOCAL MODE
+        ENTITY ProductMarket
+        UPDATE FIELDS ( Isocode ) WITH VALUE #(
+        FOR key IN keys ( %tky = <fs_market>-%tky
+        Isocode = space )
+         ).
+
+      ENDIF.
+
+    ENDLOOP.
+
+*    READ ENTITIES OF zkat2_I_product IN LOCAL MODE
+*                ENTITY ProductMarket
+**                  FIELDS ( Mrktid Isocode ) WITH CORRESPONDING #( keys )
+**                RESULT DATA(new_market).
+*
+*                ALL FIELDS WITH CORRESPONDING #( keys )
+*      RESULT DATA(new_market).
+
+
+
 
   ENDMETHOD.
 

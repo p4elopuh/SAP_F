@@ -18,14 +18,15 @@ etag master ChangeTime
 
   field ( numbering : managed, readonly ) ProdUuid;
   // administrative fields (read only)
-  field ( readonly ) ChangeTime, ChangedBy, CreationTime, CreatedBy;
+  field ( readonly ) ChangeTime, ChangedBy, CreationTime, CreatedBy, PgnameTrans;
   // mandatory fields that are required to create a product
   field ( mandatory ) Prodid, Price, PriceCurrency, Pgid;
   field ( mandatory ) SizeUom;
-  //  field ( readonly ) Phaseid;
+  //  field ( readonly ) Phaseid; -- moved to Projection View BD
 
   determination SetFirstPhase on save { create; }
   determination CalculateProdID on save { create; }
+  determination SetPgnameTranslation on save { field Pgname; field TransCode; }
 
   validation ValidateProdID on save { field Prodid; create; }
   validation ValidatePG on save { field Pgid; create; }
@@ -33,6 +34,7 @@ etag master ChangeTime
 
   action ( features : instance ) MoveToNextPhase result [1] $self;
   action ( features : instance ) MakeCopy parameter zkat2_abstract_param_prodid result [1] $self;
+  action ( features : instance ) GetPgnameTransl result [1] $self;
   //action ( features : instance ) checkStatus result [1] $self;
   //internal action recheckStatus;
 
@@ -46,13 +48,13 @@ etag master ChangeTime
     validation ProductMarket~ValidateEndDate;
     validation ProductMarket~CheckDuplicates;
     validation MarketOrder~ValidateDeliveryDate;
+    validation MarketOrder~validateBussPartner;
   }
 
   draft action Edit;
   draft action Activate;
   draft action Discard;
   draft action Resume;
-
   mapping for zkat2_d_product
     {
       ProdUuid      = prod_uuid;
@@ -70,7 +72,10 @@ etag master ChangeTime
       CreationTime  = creation_time;
       ChangedBy     = changed_by;
       ChangeTime    = change_time;
+      PgnameTrans = pgname_trans;
+      TransCode = trans_code;
     }
+
 
 
 
@@ -104,6 +109,11 @@ etag master ChangeTime
   field ( readonly ) Isocode;
 
 
+//  determination SetIsoCode on modify { field Isocode; create; }
+  determination SetIsoCode on save { field Isocode; create;
+  update;
+  }
+
   validation ValidateMarket on save { field Mrktid; create; }
   validation ValidateStartDate on save { field Startdate; create; }
   validation ValidateEndDate on save { field Enddate; create; }
@@ -126,6 +136,7 @@ etag master ChangeTime
       CreationTime = creation_time;
       ChangedBy    = changed_by;
       ChangeTime   = change_time;
+      Isocode = isocode;
     }
 
 
@@ -138,10 +149,13 @@ define behavior for ZKAT2_I_MRKT_ORD alias MarketOrder
 implementation in class zbp_kat2_i_mrkt_ord unique
 
 persistent table zkat2_d_mrkt_ord
+
 draft table zkat2_d_ord_d
+
 lock dependent by _Product
 authorization dependent by _Product
 etag master ChangeTime
+
 
 
 {
@@ -152,7 +166,7 @@ etag master ChangeTime
 
   field ( numbering : managed, readonly ) OrderUuid;
   field ( mandatory ) Quantity, DeliveryDate;
-  field ( readonly ) CreatedBy, CreationTime, ChangedBy, ChangeTime;
+  field ( readonly ) CreatedBy, CreationTime, ChangedBy, ChangeTime, Status;
   field ( readonly ) ProdUuid, MrktUuid;
 
   internal action recalcAmount;
@@ -164,8 +178,9 @@ etag master ChangeTime
   determination calculateAmount on modify { field Quantity; create; }
 
   validation validateDeliveryDate on save { field DeliveryDate; create; }
+  validation validateBussPartner on save { field BussPartner; create; update; }
 
-    mapping for zkat2_d_mrkt_ord
+  mapping for zkat2_d_mrkt_ord
     {
       OrderUuid    = order_uuid;
       MrktUuid     = mrkt_uuid;
@@ -177,11 +192,19 @@ etag master ChangeTime
       Netamount    = netamount;
       Grossamount  = grossamount;
       Amountcurr   = amountcurr;
+      BussPartner  = busspartner;
+      BPCompany    = busspartnercompany;
+      BPEmail      = busspartneremail;
+      BPPhone      = busspartnerphone;
+      Status       = status;
       CreatedBy    = created_by;
       CreationTime = creation_time;
       ChangedBy    = changed_by;
       ChangeTime   = change_time;
     }
+
+
+
 
 
 

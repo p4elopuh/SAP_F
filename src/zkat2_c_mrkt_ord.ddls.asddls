@@ -31,6 +31,42 @@ define view entity ZKAT2_C_MRKT_ORD
           Grossamount,
           @Search.defaultSearchElement: true
           Amountcurr,
+
+          //          @ObjectModel.text.element: ['BussPartnerName']
+          @ObjectModel.text.element: ['BPCompany']
+          @EndUserText.label: 'Business Partner'
+          @Consumption.valueHelpDefinition: [{
+                                           entity : {
+                                                      name:    'zkat2_i_business_partner_c',
+                                                      element: 'BusinessPartner'
+                                                    },
+
+                                           additionalBinding: [
+                                                               { localElement: 'BPCompany',  element: 'CompanyName' },
+                                                               { localElement: 'BPEmail', element: 'EmailAddress' },
+                                                               { localElement: 'BPPhone', element: 'PhoneNumber' }
+                                                              ]
+                                        }]
+          @Search.defaultSearchElement: true
+
+          BussPartner,
+          //          BussPartnerName,
+          //          @EndUserText.label: 'Business Partner Group'
+          //          BussPartnerGroup,
+          @EndUserText.label: 'Business Partner Company'
+          BPCompany,
+          @EndUserText.label: 'Business Partner Email'
+          BPEmail,
+          @EndUserText.label: 'Business Partner Phone'
+          BPPhone,
+
+          @Search.defaultSearchElement: true
+          @EndUserText.label: 'OS Confirmed?'
+          Status,
+
+          StatusCriticality,
+
+
           @Semantics.imageUrl: true
           @ObjectModel.virtualElementCalculatedBy: 'ABAP:ZKAT2_CL_VE_IMAGEURL'
   virtual CustImageURL : abap.string( 256 ),

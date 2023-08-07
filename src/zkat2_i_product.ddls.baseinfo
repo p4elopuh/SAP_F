@@ -3,6 +3,7 @@
 {
 "FROM":
 [
+"ZKAT2_I_PG",
 "ZKAT2_D_PRODUCT"
 ],
 "ASSOCIATED":

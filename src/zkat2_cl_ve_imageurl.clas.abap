@@ -13,7 +13,7 @@ ENDCLASS.
 
 
 
-CLASS zkat2_cl_ve_imageurl IMPLEMENTATION.
+CLASS ZKAT2_CL_VE_IMAGEURL IMPLEMENTATION.
 
 
  METHOD if_sadl_exit_calc_element_read~calculate.
@@ -29,10 +29,7 @@ CLASS zkat2_cl_ve_imageurl IMPLEMENTATION.
     ct_calculated_data = CORRESPONDING #(  orders ).
   ENDMETHOD.
 
+
   METHOD if_sadl_exit_calc_element_read~get_calculation_info.
   ENDMETHOD.
-
-
-
-
 ENDCLASS.

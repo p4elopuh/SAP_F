@@ -15,6 +15,7 @@ define behavior for zkat2_c_product alias Product
 
   use action MoveToNextPhase;
   use action MakeCopy;
+  use action GetPgnameTransl;
 
   use action Prepare;
   use action Edit;
